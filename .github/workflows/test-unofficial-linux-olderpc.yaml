@@ -11,8 +11,7 @@ on:
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   NOAVX1: 1
-  ARCHES_CU11: 1
-  KCPP_CUDA: 11.5.0
+  NOAVX2: 1
 
 jobs:
   linux:
@@ -53,7 +52,7 @@ jobs:
           ./koboldcpp.sh dist
 
       - name: Rename file before upload
-        run: mv dist/koboldcpp-linux-x64-cuda1150 dist/koboldcpp-linux-x64-olderpc
+        run: mv dist/koboldcpp-linux-x64-nocuda dist/koboldcpp-linux-x64-olderpc
 
       - name: Save artifact
         uses: actions/upload-artifact@v6
