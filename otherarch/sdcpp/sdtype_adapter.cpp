@@ -17,9 +17,8 @@
 #include "otherarch/utils.h"
 #include "model_adapter.h"
 
-// #include "preprocessing.hpp"
 #include "stable-diffusion.h"
-#include "kcpp_sd_extensions.h"
+#include "src/kcpp_sd_extensions.h"
 #include "ggml-backend.h"
 
 using namespace kcpp_sd;
@@ -125,8 +124,6 @@ struct SDParams {
     bool diffusion_conv_direct    = false;
     bool vae_conv_direct          = false;
 
-    bool chroma_use_dit_mask     = true;
-
     LoraMap lora_map;
     bool lora_dynamic = false;
 
@@ -203,105 +200,74 @@ static std::string read_str_from_disk(std::string filepath)
     return output;
 }
 
+static std::string load_embd_file(std::string& cache, const char* filename)
+{
+    if (cache.empty()) {
+        std::string filepath = executable_path + filename;
+        cache = read_str_from_disk(filepath);
+    }
+    return cache;
+}
+
 std::string load_clip_merges()
 {
-    static std::string mergesstr;  // cached string
-    if (!mergesstr.empty()) {
-        return mergesstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/merges_utf8_c_str.embd";
-    mergesstr = read_str_from_disk(filepath);
-    return mergesstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/merges_utf8_c_str.embd");
 }
 std::string load_qwen2_merges()
 {
-    static std::string qwenmergesstr;  // cached string
-    if (!qwenmergesstr.empty()) {
-        return qwenmergesstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/qwen2_merges_utf8_c_str.embd";
-    qwenmergesstr = read_str_from_disk(filepath);
-    return qwenmergesstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/qwen2_merges_utf8_c_str.embd");
 }
 std::string load_gemma_merges()
 {
-    static std::string gemmamergesstr;  // cached string
-    if (!gemmamergesstr.empty()) {
-        return gemmamergesstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/gemma2_merges_utf8_c_str.embd";
-    gemmamergesstr = read_str_from_disk(filepath);
-    return gemmamergesstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/gemma_merges_utf8_c_str.embd");
 }
 std::string load_gemma_vocab_json()
 {
-    static std::string gemmavocabstr;  // cached string
-    if (!gemmavocabstr.empty()) {
-        return gemmavocabstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/gemma2_vocab_json.embd";
-    gemmavocabstr = read_str_from_disk(filepath);
-    return gemmavocabstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/gemma_vocab_json.embd");
+}
+std::string load_gemma2_merges()
+{
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/gemma2_merges_utf8_c_str.embd");
+}
+std::string load_gemma2_vocab_json()
+{
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/gemma2_vocab_json.embd");
 }
 std::string load_mistral_merges()
 {
-    static std::string mistralmergesstr;  // cached string
-    if (!mistralmergesstr.empty()) {
-        return mistralmergesstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/mistral2_merges_utf8_c_str.embd";
-    mistralmergesstr = read_str_from_disk(filepath);
-    return mistralmergesstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/mistral2_merges_utf8_c_str.embd");
 }
 std::string load_mistral_vocab_json()
 {
-    static std::string mistralvocabstr;  // cached string
-    if (!mistralvocabstr.empty()) {
-        return mistralvocabstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/mistral2_vocab_json.embd";
-    mistralvocabstr = read_str_from_disk(filepath);
-    return mistralvocabstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/mistral2_vocab_json.embd");
 }
 std::string load_t5_tokenizer_json()
 {
-    static std::string t5str = "";
-    if (!t5str.empty()) {
-        return t5str;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/t5_tokenizer_json.embd";
-    t5str = read_str_from_disk(filepath);
-    return t5str;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/t5_tokenizer_json.embd");
 }
 std::string load_umt5_tokenizer_json()
 {
-    static std::string umt5str = "";
-    if (!umt5str.empty()) {
-        return umt5str;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/umt5_tokenizer_json.embd";
-    umt5str = read_str_from_disk(filepath);
-    return umt5str;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/umt5_tokenizer_json.embd");
 }
 std::string load_gpt_oss_merges()
 {
-    static std::string mergesstr;  // cached string
-    if (!mergesstr.empty()) {
-        return mergesstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/gpt_oss_merges_utf8_c_str.embd";
-    mergesstr = read_str_from_disk(filepath);
-    return mergesstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/gpt_oss_merges_utf8_c_str.embd");
 }
 std::string load_gpt_oss_vocab_json()
 {
-    static std::string vocabstr;  // cached string
-    if (!vocabstr.empty()) {
-        return vocabstr;  // already loaded
-    }
-    std::string filepath = executable_path + "embd_res/gpt_oss_vocab_json.embd";
-    vocabstr = read_str_from_disk(filepath);
-    return vocabstr;
+    static std::string cache;
+    return load_embd_file(cache, "embd_res/gpt_oss_vocab_json.embd");
 }
 
 static std::string get_device_override(int value, const char * module = nullptr)
@@ -447,7 +413,7 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
         printf("Using mmap for I/O\n");
     }
     if(inputs.max_vram != 0.f) {
-        printf("Using max VRAM = %0.2f\n", inputs.max_vram);
+        printf("Using max VRAM = %0.2f GB\n", inputs.max_vram);
     }
     if(inputs.quant > 0)
     {
@@ -513,16 +479,12 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
     params.diffusion_flash_attn = sd_params->diffusion_flash_attn;
     params.diffusion_conv_direct = sd_params->diffusion_conv_direct;
     params.vae_conv_direct = sd_params->vae_conv_direct;
-    params.chroma_use_dit_mask = sd_params->chroma_use_dit_mask;
+    params.chroma_use_dit_mask = true;
     params.max_vram = inputs.max_vram;
+    params.stream_layers = inputs.stream_layers;
     params.enable_mmap = inputs.use_mmap;
-    // the _cpu flags are only used if the backend string is empty, but
-    // we always set both for consistency
-    params.offload_params_to_cpu = inputs.offload_cpu;
     params.params_backend = inputs.offload_cpu ? "CPU" : "";
-    params.keep_vae_on_cpu = (inputs.kcpp_vae_device <= -2);
     backends += get_device_override(inputs.kcpp_vae_device, "VAE");
-    params.keep_clip_on_cpu = (inputs.kcpp_clip_device <= -2);
     backends += get_device_override(inputs.kcpp_clip_device, "CLIP");
     if (backends.rfind(",", 0) == 0) {
         backends = "auto" + backends;
@@ -535,11 +497,6 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
 
     // also switches flash attn for the vae and conditioner
     params.flash_attn = params.diffusion_flash_attn;
-
-    if (params.chroma_use_dit_mask && params.diffusion_flash_attn) {
-        // note we don't know yet if it's a Chroma model
-        params.chroma_use_dit_mask = false;
-    }
 
     if(inputs.debugmode==1)
     {
@@ -559,14 +516,6 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
     }
 
     auto info = get_model_info(sd_ctx);
-
-    if (!sd_is_quiet) {
-        if (info.is_chroma && sd_params->diffusion_flash_attn && sd_params->chroma_use_dit_mask)
-        {
-            printf("Chroma: flash attention is on, disabling DiT mask (this will lower image quality)\n");
-            // disabled before loading
-        }
-    }
 
     if (info.is_wan || info.is_ltx)
     {
@@ -590,7 +539,7 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
     if (upscaler_filename!="") {
         const int upscale_tile_size = 128;
         upscaler_ctx = new_upscaler_ctx(upscaler_filename.c_str(),
-                                        params.offload_params_to_cpu,
+                                        inputs.offload_cpu,
                                         params.diffusion_conv_direct,
                                         params.n_threads,
                                         upscale_tile_size,
@@ -609,20 +558,6 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
 
 static std::string friendly_model_name(std::filesystem::path model_path) {
     return model_path.filename().string();
-}
-
-std::string clean_input_prompt(const std::string& input) {
-    std::string result;
-    result.reserve(input.size());
-    for (char ch : input) {
-        // Check if the character is an ASCII or extended ASCII character
-        if (static_cast<unsigned char>(ch) <= 0x7F || (ch >= 0xC2 && ch <= 0xF4)) {
-            result.push_back(ch);
-        }
-    }
-    //limit to max 800 chars
-    result = result.substr(0, 800);
-    return result;
 }
 
 static std::string get_scheduler_name(scheduler_t scheduler, bool as_sampler_suffix = false)
@@ -1019,9 +954,6 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
     }
     sd_image_t * results = nullptr;
 
-    //sanitize prompts, remove quotes and limit lengths
-    std::string cleanprompt = clean_input_prompt(inputs.prompt);
-    std::string cleannegprompt = clean_input_prompt(inputs.negative_prompt);
     std::string img2img_data = std::string(inputs.init_images);
     std::string img2img_mask = std::string(inputs.mask);
     std::vector<std::string> extra_image_data;
@@ -1030,8 +962,8 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
         extra_image_data.push_back(std::string(inputs.extra_images[i]));
     }
 
-    sd_params->prompt = cleanprompt;
-    sd_params->negative_prompt = cleannegprompt;
+    sd_params->prompt = inputs.prompt;
+    sd_params->negative_prompt = inputs.negative_prompt;
     sd_params->cfg_scale = inputs.cfg_scale;
     sd_params->distilled_guidance = inputs.distilled_guidance;
     sd_params->sample_steps = inputs.sample_steps;
@@ -1371,15 +1303,16 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
         vid_gen_params.video_frames = vid_req_frames;
         vid_gen_params.fps = vid_fps;
         vid_gen_params.vae_tiling_params = params.vae_tiling_params;
-        if(wan_imgs.size()>0)
-        {
-            if(wan_imgs.size()>=1)
-            {
+        if (wan_imgs.size() > 0) {
+            if (wan_imgs.size() >= 2) {
                 vid_gen_params.init_image = wan_imgs[0];
-            }
-            if(wan_imgs.size()>=2)
-            {
-                vid_gen_params.end_image = wan_imgs[1];
+                vid_gen_params.end_image  = wan_imgs[1];
+            } else if (wan_imgs.size() == 1) {
+                if (inputs.reverse_refimg) {
+                    vid_gen_params.end_image = wan_imgs[0];
+                } else {
+                    vid_gen_params.init_image = wan_imgs[0];
+                }
             }
         }
         if(!sd_is_quiet && sddebugmode==1)

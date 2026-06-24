@@ -51,6 +51,7 @@ struct load_model_inputs
     const int visionmaxtokens = -1;
     const bool use_mmap = false;
     const bool use_mlock = false;
+    const bool use_mtp = false;
     const bool use_smartcontext = false;
     const bool use_contextshift = false;
     const bool use_fastforward = false;
@@ -210,7 +211,8 @@ struct sd_load_model_inputs
     const char * upscaler_filename = nullptr;
     const int img_hard_limit = 0;
     const int img_soft_limit = 0;
-    float max_vram = 0.f;
+    const float max_vram = 0.f;
+    const bool stream_layers = false;
     const char * devices_override = nullptr;
     const bool quiet = false;
     const int debugmode = 0;
@@ -223,6 +225,7 @@ struct sd_generation_inputs
     const char * mask = "";
     const int extra_images_len = 0;
     const char ** extra_images = nullptr;
+    const bool reverse_refimg = false;
     const bool flip_mask = false;
     const float denoising_strength = 0.0f;
     const float cfg_scale = 0.0f;
